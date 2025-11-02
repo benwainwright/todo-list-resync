@@ -9,11 +9,7 @@ export const calculateGapsInWorkingDay = (
   tasksOnDay: Task[],
   dayOffset: number,
 ) => {
-  const occupiedIntervals = findOccupiedIntervals(
-    eventsOnDay,
-    tasksOnDay,
-    dayOffset,
-  );
+  const occupiedIntervals = findOccupiedIntervals(eventsOnDay, tasksOnDay);
 
   const workingDayInterval = generateWorkingDayInterval(
     dayOffset,

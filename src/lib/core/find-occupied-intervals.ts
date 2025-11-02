@@ -6,7 +6,6 @@ import { intervalFromEvent } from "./interval-from-event.ts";
 export const findOccupiedIntervals = (
   events: Event[],
   tasks: Task[],
-  offset: number,
 ) => {
   const intervals = [...events, ...tasks].flatMap((thing) => {
     const interval =
@@ -15,9 +14,6 @@ export const findOccupiedIntervals = (
         : "end" in thing
           ? intervalFromEvent(thing)
           : undefined;
-    if (offset === 1) {
-      console.log(interval);
-    }
     return interval ? [interval] : [];
   });
 
