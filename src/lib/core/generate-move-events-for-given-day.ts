@@ -42,18 +42,15 @@ export const generateMoveEventsForGivenDay = (
 
   const allocator = new IntervalAllocator(gaps);
 
-  let allocations = 0;
-
   for (
     let taskToAllocate = 0;
-    allocations < MAX_TASKS_PER_DAY &&
-    taskToAllocate < tasksToMove.length - allocations;
+    allocator.allocatedIntervals.length < MAX_TASKS_PER_DAY &&
+    taskToAllocate < tasksToMove.length - allocator.allocatedIntervals.length;
     taskToAllocate++
   ) {
     const theTask = tasksToMove[taskToAllocate];
     if (theTask && allocator.tryAllocate(theTask)) {
       tasksToMove.splice(taskToAllocate, 1);
-      allocations++;
     }
   }
 
