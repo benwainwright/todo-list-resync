@@ -34,9 +34,9 @@ export class IntervalAllocator {
   }
 
   public tryAllocate(task: Task) {
-    this.events.emit("TryAllocation", task);
-
     const gaps = this.gaps;
+
+    this.events.emit("TryAllocation", { task, gaps });
 
     for (const gap of gaps) {
       if (!gap.start) {

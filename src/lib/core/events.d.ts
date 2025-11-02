@@ -13,7 +13,7 @@ declare global {
     NewTasksAllocated: { offset: number; updateTasks: Task[] };
     CalculatingWorkingDayGaps: Interval[];
     FinishedCalculation: { tasksToUpdate: Task[] };
-    TryAllocation: Task;
+    TryAllocation: { task: Task; gaps: Interval[] };
     TryGap: Interval;
     AllocationSucceed: {
       old: Task;

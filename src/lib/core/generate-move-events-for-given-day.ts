@@ -43,9 +43,7 @@ export const generateMoveEventsForGivenDay = (
   }
 
   const gaps = calculateGapsInWorkingDay(eventsOnDay, dayTasks, dayOffset);
-
   eventEmitter.emit("CalculatingWorkingDayGaps", gaps);
-
   const allocator = new IntervalAllocator(gaps, eventEmitter);
 
   const remainingCapacity = Math.max(0, MAX_TASKS_PER_DAY - dayTasks.length);
