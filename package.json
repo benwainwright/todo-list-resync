@@ -2,17 +2,23 @@
   "name": "todoist-resync",
   "module": "index.ts",
   "type": "module",
+  "scripts": {
+    "lint": "eslint ."
+  },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "@types/luxon": "^3.7.1",
+    "@eslint/js": "^9.39.0",
+    "eslint": "^9.39.0"
   },
   "peerDependencies": {
-    "typescript": "^5"
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "@doist/todoist-api-typescript": "^6.0.0",
     "@drizzle-team/brocli": "^0.11.0",
     "@googleapis/calendar": "^12.0.0",
-    "@types/luxon": "^3.7.1",
-    "luxon": "^3.7.2"
+    "luxon": "^3.7.2",
+    "typescript-eslint": "^8.46.2"
   }
 }

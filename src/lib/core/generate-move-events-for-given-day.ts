@@ -1,8 +1,8 @@
 import type { Event, Task } from "@types";
 import { MAX_TASKS_PER_DAY } from "@constants";
+
 import { calculateGapsInWorkingDay } from "./calculate-gaps-in-working-day.ts";
 import { IntervalAllocator } from "./interval-allocator.ts";
-import type { TaskUpdateEvent } from "lib/types/task-update-event.ts";
 
 interface MaxTasksOutcome {
   status: "MaxTasks";

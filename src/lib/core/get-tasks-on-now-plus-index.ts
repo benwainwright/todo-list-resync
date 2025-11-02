@@ -8,9 +8,6 @@ export const getTasksOnNowPlusIndex = (tasks: Task[], index: number) => {
   const dayEnd = getEndOfDayN(index);
 
   return tasks.filter((task) => {
-    if (task.description.includes("guitar")) {
-      console.log(task);
-    }
     const start = task.start && DateTime.fromJSDate(task.start.date);
 
     if (!start) {

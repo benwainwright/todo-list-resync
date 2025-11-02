@@ -22,7 +22,10 @@ export class TodoistClient implements TasksApi {
   }
 
   public async getTasks(): Promise<Task[]> {
-    return await this.getTasksHelper();
+    console.log("Downloading tasks from todoist");
+    const tasks = await this.getTasksHelper();
+    console.log("Finished downloading tasks from todoist");
+    return tasks;
   }
 
   private async getTasksHelper(previousCursor?: string): Promise<Task[]> {

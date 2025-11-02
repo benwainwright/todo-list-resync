@@ -23,8 +23,8 @@
 
     "baseUrl": "./src",
     "paths": {
-      "@events": ["./lib/events/index.ts"],
-      "@tasks": ["./lib/tasks/index.ts"],
+      "@google-calendar": ["./lib/google-calendar/index.ts"],
+      "@todoist": ["./lib/todoist/index.ts"],
       "@core": ["./lib/core/index.ts"],
       "@types": ["./lib/types/index.ts"],
       "@constants": ["./lib/constants.ts"]

@@ -1,14 +1,13 @@
+import { Interval } from "luxon";
 import type { Event, Task } from "@types";
 import { intervalFromTask } from "./interval-from-task.ts";
 import { intervalFromEvent } from "./interval-from-event.ts";
-import { Interval } from "luxon";
 
 export const findOccupiedIntervals = (
   events: Event[],
   tasks: Task[],
   offset: number,
 ) => {
-  console.log;
   const intervals = [...events, ...tasks].flatMap((thing) => {
     const interval =
       "duration" in thing

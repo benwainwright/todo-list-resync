@@ -1,7 +1,8 @@
 import { runSync } from "@core";
 import { command, run, string } from "@drizzle-team/brocli";
-import { GoogleCalendarClient } from "@events";
-import { TodoistClient } from "@tasks";
+
+import { GoogleCalendarClient } from "@google-calendar";
+import { TodoistClient } from "@todoist";
 
 const sync = command({
   name: "sync",
@@ -21,6 +22,7 @@ const sync = command({
     });
 
     try {
+      console.log("Initialising update...");
       await runSync({
         calendar: google,
         taskList: todoist,

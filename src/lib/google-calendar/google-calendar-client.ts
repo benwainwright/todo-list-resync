@@ -10,7 +10,10 @@ export class GoogleCalendarClient implements CalendarApi {
   ) {}
 
   public async getEvents(): Promise<Event[]> {
-    return await this.getEventsHelper();
+    console.log("Downloading events from google calendar");
+    const events = await this.getEventsHelper();
+    console.log("Finished downloading events from google calendar");
+    return events;
   }
 
   private async getEventsHelper(
@@ -21,10 +24,14 @@ export class GoogleCalendarClient implements CalendarApi {
       auth: this.config.apiKey,
     });
 
+    const now = new Date().toISOString();
+
     const {
       data: { nextPageToken, items: events },
     } = await calendarApi.events.list({
       singleEvents: true,
+      timeMin: now,
+      orderBy: "startTime",
       calendarId: this.config.calendarId,
       pageToken: previousNextPageToken,
     });

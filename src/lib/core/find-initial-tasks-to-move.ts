@@ -1,5 +1,6 @@
-import type { Task } from "@types";
 import { DateTime } from "luxon";
+
+import type { Task } from "@types";
 
 export const findInitialTasksToMove = (tasks: Task[]) => {
   const hasNoSchedule = tasks.filter((item) => !item.start);
