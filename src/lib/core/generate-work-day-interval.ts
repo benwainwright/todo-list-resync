@@ -1,6 +1,5 @@
 import { Interval } from "luxon";
 
-import { getEndOfDayN } from "./get-end-of-day-n.ts";
 import { getStartOfDayN } from "./get-start-of-day-n.ts";
 
 export const generateWorkingDayInterval = (
@@ -8,8 +7,19 @@ export const generateWorkingDayInterval = (
   startHour: number,
   endHour: number,
 ) => {
-  const dayStart = getStartOfDayN(offset).set({ hour: startHour });
-  const dayEnd = getEndOfDayN(offset).set({ hour: endHour });
+  const baseDay = getStartOfDayN(offset);
+  const dayStart = baseDay.set({
+    hour: startHour,
+    minute: 0,
+    second: 0,
+    millisecond: 0,
+  });
+  const dayEnd = baseDay.set({
+    hour: endHour,
+    minute: 0,
+    second: 0,
+    millisecond: 0,
+  });
 
   return Interval.fromDateTimes(dayStart, dayEnd);
 };
