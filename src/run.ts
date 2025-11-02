@@ -1,4 +1,4 @@
-import { runSync } from "@core";
+import { runSync, EventBus } from "@core";
 import { command, run, string } from "@drizzle-team/brocli";
 
 import { GoogleCalendarClient } from "@google-calendar";
@@ -12,20 +12,28 @@ const sync = command({
     calendarId: string().required(),
   },
   handler: async (opts) => {
+    const events = new EventBus();
+
+    events.onAll((data) => {
+      console.log(data);
+    });
+
     const google = new GoogleCalendarClient({
       calendarId: opts.calendarId,
       apiKey: opts.googleApiKey,
+      events,
     });
 
     const todoist = new TodoistClient({
       token: opts.todoistToken,
+      events,
     });
 
     try {
-      console.log("Initialising update...");
       await runSync({
         calendar: google,
         taskList: todoist,
+        eventEmitter: events,
       });
     } catch (error) {
       console.log(error);

@@ -1,4 +1,4 @@
-import type { Task } from "@types";
+import type { EventEmitter, Task } from "@types";
 import { Interval } from "luxon";
 import { intervalFromTask } from "./interval-from-task.ts";
 import { DEFAULT_TASK_MINUTES } from "@constants";
@@ -6,7 +6,10 @@ import { DEFAULT_TASK_MINUTES } from "@constants";
 export class IntervalAllocator {
   private _cachedGaps: Interval[] | null = null;
 
-  public constructor(private _gaps: Interval[]) {}
+  public constructor(
+    private _gaps: Interval[],
+    private events: EventEmitter,
+  ) {}
 
   public readonly allocatedIntervals: { task: Task; newInterval: Interval }[] =
     [];
@@ -31,9 +34,7 @@ export class IntervalAllocator {
   }
 
   public tryAllocate(task: Task) {
-    if (!task) {
-      return false;
-    }
+    this.events.emit("TryAllocation", task);
 
     const gaps = this.gaps;
 
@@ -41,6 +42,8 @@ export class IntervalAllocator {
       if (!gap.start) {
         continue;
       }
+
+      this.events.emit("TryGap", gap);
 
       const newTask = {
         ...task,
@@ -50,6 +53,7 @@ export class IntervalAllocator {
           amount: DEFAULT_TASK_MINUTES,
         },
       };
+
       const candidateInterval = intervalFromTask(newTask);
 
       if (candidateInterval && gap.engulfs(candidateInterval)) {
@@ -58,10 +62,12 @@ export class IntervalAllocator {
           newInterval: candidateInterval,
         });
         this.invalidateGapsCache();
+        this.events.emit("AllocationSucceed", { old: task, new: newTask });
         return true;
       }
     }
 
+    this.events.emit("AllocationFailed");
     return false;
   }
 }

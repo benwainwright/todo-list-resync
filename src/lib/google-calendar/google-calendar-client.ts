@@ -1,18 +1,23 @@
 import { calendar_v3 as googleCalender } from "@googleapis/calendar";
-import type { CalendarApi, Event } from "@types";
+import type { CalendarApi, Event, EventEmitter } from "@types";
 
 export class GoogleCalendarClient implements CalendarApi {
+  private events: EventEmitter;
   public constructor(
     private config: {
       calendarId: string;
       apiKey: string;
+      events: EventEmitter;
     },
-  ) {}
+  ) {
+    this.events = config.events;
+    this.events.emit("GoogleCalendarClientInitialised");
+  }
 
   public async getEvents(): Promise<Event[]> {
-    console.log("Downloading events from google calendar");
+    this.events.emit("GoogleCalendarEventsRequesting");
     const events = await this.getEventsHelper();
-    console.log("Finished downloading events from google calendar");
+    this.events.emit("GoogleCalenderEventsRequested");
     return events;
   }
 

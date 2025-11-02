@@ -1,4 +1,4 @@
-import type { CalendarApi, TasksApi, Task } from "@types";
+import type { CalendarApi, TasksApi, Task, EventEmitter } from "@types";
 
 import { findInitialTasksToMove } from "./find-initial-tasks-to-move.ts";
 import { getEventsOnNowPlusIndex } from "./get-events-on-now-plus-index.ts";
@@ -8,19 +8,28 @@ import { getTasksOnNowPlusIndex } from "./get-tasks-on-now-plus-index.ts";
 interface SyncConfig {
   calendar: CalendarApi;
   taskList: TasksApi;
+  eventEmitter: EventEmitter;
 }
 
-export const runSync = async ({ calendar, taskList }: SyncConfig) => {
+export const runSync = async ({
+  calendar,
+  taskList,
+  eventEmitter,
+}: SyncConfig) => {
+  eventEmitter.emit("SyncStarted");
   const eventsPromise = calendar.getEvents();
   const tasksPromise = taskList.getTasks();
 
   const tasks = await tasksPromise;
   const tasksToMove = findInitialTasksToMove(tasks);
+  eventEmitter.emit("IdentifiedInitialTasksToMove", tasksToMove);
 
   const tasksToUpdate: Task[] = [];
 
   const events = await eventsPromise;
   for (let dayOffset = 0; tasksToMove.length > 0; dayOffset++) {
+    eventEmitter.emit("StartingDay", { offset: dayOffset });
+
     const dayEvents = getEventsOnNowPlusIndex(events, dayOffset);
     const dayTasks = getTasksOnNowPlusIndex(tasks, dayOffset);
 
@@ -29,6 +38,7 @@ export const runSync = async ({ calendar, taskList }: SyncConfig) => {
       dayTasks,
       tasksToMove,
       dayOffset,
+      eventEmitter,
     );
 
     switch (moveEvents.status) {
@@ -41,9 +51,11 @@ export const runSync = async ({ calendar, taskList }: SyncConfig) => {
     }
   }
 
-  console.log(`Updating ${tasksToUpdate.length} tasks`);
+  eventEmitter.emit("FinishedCalculation", { tasksToUpdate });
+
   await Promise.all(
     tasksToUpdate.map(async (task) => await taskList.updateTask(task)),
   );
-  console.log(`Finished!`);
+
+  eventEmitter.emit("SyncFinished");
 };

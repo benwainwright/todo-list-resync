@@ -1,0 +1,24 @@
+import type { Task } from "@types";
+import type { Interval } from "luxon";
+
+declare global {
+  interface Events {
+    SyncFinished: undefined;
+    SyncStarted: undefined;
+    IdentifiedInitialTasksToMove: Task[];
+    StartingDay: { offset: number };
+    BeginGeneratingDayMoveEvents: { offset: number };
+    DayTasksIsAtMax: { offset: number };
+    TooManyTasksInDay: { offset: number; toMove: Task[] };
+    NewTasksAllocated: { offset: number; updateTasks: Task[] };
+    CalculatingWorkingDayGaps: Interval[];
+    FinishedCalculation: { tasksToUpdate: Task[] };
+    TryAllocation: Task;
+    TryGap: Interval;
+    AllocationSucceed: {
+      old: Task;
+      new: Task;
+    };
+    AllocationFailed: undefined;
+  }
+}

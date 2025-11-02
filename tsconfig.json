@@ -26,6 +26,7 @@
       "@google-calendar": ["./lib/google-calendar/index.ts"],
       "@todoist": ["./lib/todoist/index.ts"],
       "@core": ["./lib/core/index.ts"],
+      "@events": ["./lib/events.ts"],
       "@types": ["./lib/types/index.ts"],
       "@constants": ["./lib/constants.ts"]
     }

@@ -3,28 +3,33 @@ import {
   type Task as TodoistTask,
 } from "@doist/todoist-api-typescript";
 
-import type { Task, TasksApi } from "@types";
+import type { EventEmitter, Task, TasksApi } from "@types";
 
 export class TodoistClient implements TasksApi {
   private api: TodoistApi;
+  private events: EventEmitter;
 
-  public constructor(config: { token: string }) {
+  public constructor(config: { token: string; events: EventEmitter }) {
     this.api = new TodoistApi(config.token);
+    this.events = config.events;
+    this.events.emit("TodoistClientInitialised");
   }
 
   async updateTask(task: Task): Promise<void> {
+    this.events.emit("TodoistTaskUpdateStarted", task);
     const start = task.start?.date.toISOString() ?? "";
     await this.api.updateTask(task.id, {
       dueDatetime: start,
       duration: task.duration?.amount ?? 0,
       durationUnit: task.duration?.unit ?? "minute",
     });
+    this.events.emit("TodoistTaskUpdated", task);
   }
 
   public async getTasks(): Promise<Task[]> {
-    console.log("Downloading tasks from todoist");
+    this.events.emit("TodoistTasksRequesting");
     const tasks = await this.getTasksHelper();
-    console.log("Finished downloading tasks from todoist");
+    this.events.emit("TodoistTasksRequested");
     return tasks;
   }
 

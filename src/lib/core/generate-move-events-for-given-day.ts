@@ -1,4 +1,4 @@
-import type { Event, Task } from "@types";
+import type { Event, EventEmitter, Task } from "@types";
 import { MAX_TASKS_PER_DAY } from "@constants";
 
 import { calculateGapsInWorkingDay } from "./calculate-gaps-in-working-day.ts";
@@ -28,29 +28,33 @@ export const generateMoveEventsForGivenDay = (
   dayTasks: Task[],
   tasksToMove: Task[],
   dayOffset: number,
+  eventEmitter: EventEmitter,
 ): DayOutcome => {
+  eventEmitter.emit("BeginGeneratingDayMoveEvents", { offset: dayOffset });
   if (dayTasks.length === MAX_TASKS_PER_DAY) {
+    eventEmitter.emit("DayTasksIsAtMax", { offset: dayOffset });
     return { status: "MaxTasks" };
   }
 
   if (dayTasks.length > MAX_TASKS_PER_DAY) {
     const [, , ...rest] = dayTasks;
+    eventEmitter.emit("TooManyTasksInDay", { offset: dayOffset, toMove: rest });
     return { status: "GreaterThanMaxTasks", toMove: rest };
   }
 
   const gaps = calculateGapsInWorkingDay(eventsOnDay, dayTasks, dayOffset);
 
-  const allocator = new IntervalAllocator(gaps);
+  eventEmitter.emit("CalculatingWorkingDayGaps", gaps);
 
-  const remainingCapacity = Math.max(
-    0,
-    MAX_TASKS_PER_DAY - dayTasks.length,
-  );
+  const allocator = new IntervalAllocator(gaps, eventEmitter);
+
+  const remainingCapacity = Math.max(0, MAX_TASKS_PER_DAY - dayTasks.length);
 
   for (
     let taskToAllocate = 0;
     taskToAllocate < tasksToMove.length &&
     allocator.allocatedIntervals.length < remainingCapacity;
+
   ) {
     const theTask = tasksToMove[taskToAllocate];
 
@@ -66,8 +70,17 @@ export const generateMoveEventsForGivenDay = (
     tasksToMove.splice(taskToAllocate, 1);
   }
 
+  const newTasks = allocator.allocatedIntervals.map(
+    (interval) => interval.task,
+  );
+
+  eventEmitter.emit("NewTasksAllocated", {
+    offset: dayOffset,
+    updateTasks: newTasks,
+  });
+
   return {
     status: "LessThanMaxTasks",
-    newTasks: allocator.allocatedIntervals.map((interval) => interval.task),
+    newTasks,
   };
 };
