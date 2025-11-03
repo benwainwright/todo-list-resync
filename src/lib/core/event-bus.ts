@@ -1,11 +1,6 @@
 import { EventEmitter as NodeEventEmitter } from "node:events";
-import type { EventEmitter } from "@types";
+import type { EmittedEvent, EventEmitter } from "@types";
 import { EVENT_BUS_KEY } from "@constants";
-
-interface EventEmission<TEventName extends keyof globalThis.Events> {
-  name: TEventName;
-  data: globalThis.Events[TEventName];
-}
 
 export class EventBus implements EventEmitter {
   private emitter = new NodeEventEmitter();
@@ -15,12 +10,12 @@ export class EventBus implements EventEmitter {
       ? []
       : [data: globalThis.Events[TEventName]]
   ) {
-    this.emitter.emit(EVENT_BUS_KEY, { name, args });
+    this.emitter.emit(EVENT_BUS_KEY, { name, data: args[0] });
   }
 
   public async onAll<
     TEventName extends keyof globalThis.Events = keyof globalThis.Events,
-  >(callback: (data: EventEmission<TEventName>) => void) {
+  >(callback: (data: EmittedEvent<TEventName>) => void) {
     this.emitter.on(EVENT_BUS_KEY, callback);
   }
 
@@ -28,7 +23,7 @@ export class EventBus implements EventEmitter {
     name: TEventName,
     callback: (data: globalThis.Events[TEventName]) => void,
   ) {
-    this.emitter.on(EVENT_BUS_KEY, (data: EventEmission<TEventName>) => {
+    this.emitter.on(EVENT_BUS_KEY, (data: EmittedEvent<TEventName>) => {
       if (data.name === name) {
         callback(data.data);
       }
