@@ -4,7 +4,7 @@ import { EVENT_BUS_KEY } from "@constants";
 
 export class EventBus implements EventEmitter {
   private emitter = new NodeEventEmitter();
-  public async emit<TEventName extends keyof globalThis.Events>(
+  public emit<TEventName extends keyof globalThis.Events>(
     name: TEventName,
     ...args: globalThis.Events[TEventName] extends undefined
       ? []
@@ -13,7 +13,7 @@ export class EventBus implements EventEmitter {
     this.emitter.emit(EVENT_BUS_KEY, { name, data: args[0] });
   }
 
-  public async onAll<
+  public onAll<
     TEventName extends keyof globalThis.Events = keyof globalThis.Events,
   >(callback: (data: EmittedEvent<TEventName>) => void) {
     this.emitter.on(EVENT_BUS_KEY, callback);
