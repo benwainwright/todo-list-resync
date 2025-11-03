@@ -4,4 +4,5 @@
  */
 export default {
   "*.{ts,js,json,md}": "bunx --bun prettier --write",
+  "*.{ts,js}": "bunx --bun eslint --fix",
 };
