@@ -21,13 +21,12 @@
     "noUnusedParameters": false,
     "noPropertyAccessFromIndexSignature": false,
 
-    "baseUrl": "./src",
     "paths": {
-      "@google-calendar": ["./lib/google-calendar/index.ts"],
-      "@todoist": ["./lib/todoist/index.ts"],
-      "@core": ["./lib/core/index.ts"],
-      "@types": ["./lib/types/index.ts"],
-      "@constants": ["./lib/constants.ts"]
+      "@google-calendar": ["./src/lib/google-calendar/index.ts"],
+      "@todoist": ["./src/lib/todoist/index.ts"],
+      "@core": ["./src/lib/core/index.ts"],
+      "@types": ["./src/lib/types/index.ts"],
+      "@constants": ["./src/lib/constants.ts"]
     }
   }
 }

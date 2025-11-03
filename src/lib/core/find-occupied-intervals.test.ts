@@ -40,14 +40,43 @@ test("merges overlapping occupied intervals from events and tasks", () => {
   const intervals = findOccupiedIntervals(events, tasks);
 
   expect(intervals).toHaveLength(2);
-  expect(intervals[0].start.toISO()).toBe(base.toISO());
-  expect(intervals[0].end.toISO()).toBe(
-    base.plus({ hours: 1, minutes: 30 }).toISO(),
-  );
-  expect(intervals[1].start.toISO()).toBe(base.plus({ hours: 3 }).toISO());
-  expect(intervals[1].end.toISO()).toBe(
-    base.plus({ hours: 4, minutes: 15 }).toISO(),
-  );
+  const first = intervals[0];
+  if (!first) {
+    throw new Error("Expected first interval to exist");
+  }
+  const second = intervals[1];
+  if (!second) {
+    throw new Error("Expected second interval to exist");
+  }
+  const firstStartIso = first.start?.toISO() ?? null;
+  const firstEndIso = first.end?.toISO() ?? null;
+  const expectedFirstStartIso = base.toISO();
+  const expectedFirstEndIso = base.plus({ hours: 1, minutes: 30 }).toISO();
+  if (
+    firstStartIso === null ||
+    firstEndIso === null ||
+    expectedFirstStartIso === null ||
+    expectedFirstEndIso === null
+  ) {
+    throw new Error("Expected ISO strings for first interval comparisons");
+  }
+  expect(firstStartIso).toBe(expectedFirstStartIso);
+  expect(firstEndIso).toBe(expectedFirstEndIso);
+
+  const secondStartIso = second.start?.toISO() ?? null;
+  const secondEndIso = second.end?.toISO() ?? null;
+  const expectedSecondStartIso = base.plus({ hours: 3 }).toISO();
+  const expectedSecondEndIso = base.plus({ hours: 4, minutes: 15 }).toISO();
+  if (
+    secondStartIso === null ||
+    secondEndIso === null ||
+    expectedSecondStartIso === null ||
+    expectedSecondEndIso === null
+  ) {
+    throw new Error("Expected ISO strings for second interval comparisons");
+  }
+  expect(secondStartIso).toBe(expectedSecondStartIso);
+  expect(secondEndIso).toBe(expectedSecondEndIso);
 });
 
 test("ignores events and tasks without a valid interval", () => {
@@ -94,8 +123,41 @@ test("ignores events and tasks without a valid interval", () => {
   const intervals = findOccupiedIntervals(events, tasks);
 
   expect(intervals).toHaveLength(2);
-  expect(intervals[0].start.toISO()).toBe(base.toISO());
-  expect(intervals[0].end.toISO()).toBe(base.plus({ hours: 1 }).toISO());
-  expect(intervals[1].start.toISO()).toBe(base.plus({ hours: 2 }).toISO());
-  expect(intervals[1].end.toISO()).toBe(base.plus({ hours: 26 }).toISO());
+  const firstValid = intervals[0];
+  if (!firstValid) {
+    throw new Error("Expected first valid interval to exist");
+  }
+  const secondValid = intervals[1];
+  if (!secondValid) {
+    throw new Error("Expected second valid interval to exist");
+  }
+  const firstValidStartIso = firstValid.start?.toISO() ?? null;
+  const firstValidEndIso = firstValid.end?.toISO() ?? null;
+  const expectedFirstValidStartIso = base.toISO();
+  const expectedFirstValidEndIso = base.plus({ hours: 1 }).toISO();
+  if (
+    firstValidStartIso === null ||
+    firstValidEndIso === null ||
+    expectedFirstValidStartIso === null ||
+    expectedFirstValidEndIso === null
+  ) {
+    throw new Error("Expected ISO strings for valid first interval");
+  }
+  expect(firstValidStartIso).toBe(expectedFirstValidStartIso);
+  expect(firstValidEndIso).toBe(expectedFirstValidEndIso);
+
+  const secondValidStartIso = secondValid.start?.toISO() ?? null;
+  const secondValidEndIso = secondValid.end?.toISO() ?? null;
+  const expectedSecondValidStartIso = base.plus({ hours: 2 }).toISO();
+  const expectedSecondValidEndIso = base.plus({ hours: 26 }).toISO();
+  if (
+    secondValidStartIso === null ||
+    secondValidEndIso === null ||
+    expectedSecondValidStartIso === null ||
+    expectedSecondValidEndIso === null
+  ) {
+    throw new Error("Expected ISO strings for valid second interval");
+  }
+  expect(secondValidStartIso).toBe(expectedSecondValidStartIso);
+  expect(secondValidEndIso).toBe(expectedSecondValidEndIso);
 });
