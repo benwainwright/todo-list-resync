@@ -26,22 +26,24 @@ const createMockEmitter = () => {
 };
 
 describe("IntervalAllocator", () => {
-  test("allocates a task into the first fitting gap and updates gaps", () => {
-    const base = DateTime.fromISO("2024-01-01T09:00:00.000Z");
-    const gap = Interval.fromDateTimes(base, base.plus({ hours: 2 }));
+  const base = DateTime.fromISO("2024-01-01T09:00:00.000Z");
+  const gap = Interval.fromDateTimes(base, base.plus({ hours: 2 }));
+
+  const createAllocator = () => {
     const { emitter, emitted } = createMockEmitter();
     const allocator = new IntervalAllocator([gap], emitter);
+    return { allocator, emitted };
+  };
 
-    const initialGaps = allocator.gaps;
+  const createTask = (): Task => ({
+    id: "task-1",
+    title: "Task without scheduling info",
+    description: "",
+  });
 
-    expect(initialGaps).toHaveLength(1);
-    expect(initialGaps[0].equals(gap)).toBe(true);
-
-    const task: Task = {
-      id: "task-1",
-      title: "Task without scheduling info",
-      description: "",
-    };
+  test("returns true and records allocation when a gap can fit", () => {
+    const { allocator } = createAllocator();
+    const task = createTask();
 
     const success = allocator.tryAllocate(task);
 
@@ -60,14 +62,34 @@ describe("IntervalAllocator", () => {
     expect(allocated.newInterval.end.toISO()).toBe(
       base.plus({ minutes: DEFAULT_TASK_MINUTES }).toISO(),
     );
+  });
+
+  test("recalculates gaps after a successful allocation", () => {
+    const { allocator } = createAllocator();
+    const task = createTask();
+
+    const initialGaps = allocator.gaps;
+    expect(initialGaps).toHaveLength(1);
+
+    const success = allocator.tryAllocate(task);
+    expect(success).toBe(true);
 
     const updatedGaps = allocator.gaps;
-
     expect(updatedGaps).toHaveLength(1);
     expect(updatedGaps[0].start.toISO()).toBe(
       base.plus({ minutes: DEFAULT_TASK_MINUTES }).toISO(),
     );
     expect(updatedGaps[0].end.toISO()).toBe(gap.end?.toISO());
+  });
+
+  test("emits detailed events for a successful allocation", () => {
+    const { allocator, emitted } = createAllocator();
+    const task = createTask();
+    const initialGaps = allocator.gaps;
+
+    const success = allocator.tryAllocate(task);
+    expect(success).toBe(true);
+    const [allocated] = allocator.allocatedIntervals;
 
     expect(emitted.map((event) => event.name)).toEqual([
       "TryAllocation",
