@@ -13,9 +13,6 @@ const sync = command({
   },
   handler: async (opts) => {
     const events = new EventBus();
-    events.onAll((data) => {
-      console.log(data);
-    });
     const google = new GoogleCalendarClient({
       calendarId: opts.calendarId,
       apiKey: opts.googleApiKey,
