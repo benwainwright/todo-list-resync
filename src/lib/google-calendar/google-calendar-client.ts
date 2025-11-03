@@ -17,7 +17,7 @@ export class GoogleCalendarClient implements CalendarApi {
   public async getEvents(): Promise<Event[]> {
     this.events.emit("GoogleCalendarEventsRequesting");
     const events = await this.getEventsHelper();
-    this.events.emit("GoogleCalenderEventsRequested");
+    this.events.emit("GoogleCalenderEventsRecieved", events);
     return events;
   }
 

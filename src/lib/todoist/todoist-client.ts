@@ -29,7 +29,7 @@ export class TodoistClient implements TasksApi {
   public async getTasks(): Promise<Task[]> {
     this.events.emit("TodoistTasksRequesting");
     const tasks = await this.getTasksHelper();
-    this.events.emit("TodoistTasksRequested");
+    this.events.emit("TodoistTasksRecieved", tasks);
     return tasks;
   }
 

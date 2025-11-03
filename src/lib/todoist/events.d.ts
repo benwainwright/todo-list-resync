@@ -6,6 +6,6 @@ declare global {
     TodoistTaskUpdateStarted: Task;
     TodoistTaskUpdated: Task;
     TodoistTasksRequesting: undefined;
-    TodoistTasksRequested: undefined;
+    TodoistTasksRecieved: Task[];
   }
 }
