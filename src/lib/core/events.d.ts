@@ -5,6 +5,7 @@ declare global {
   interface Events {
     SyncFinished: undefined;
     SyncStarted: undefined;
+    SyncError: Error;
     IdentifiedInitialTasksToMove: Task[];
     StartingDay: { offset: number };
     BeginGeneratingDayMoveEvents: { offset: number };

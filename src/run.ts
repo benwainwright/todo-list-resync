@@ -13,11 +13,9 @@ const sync = command({
   },
   handler: async (opts) => {
     const events = new EventBus();
-
     events.onAll((data) => {
       console.log(data);
     });
-
     const google = new GoogleCalendarClient({
       calendarId: opts.calendarId,
       apiKey: opts.googleApiKey,
@@ -28,16 +26,11 @@ const sync = command({
       token: opts.todoistToken,
       events,
     });
-
-    try {
-      await runSync({
-        calendar: google,
-        taskList: todoist,
-        eventEmitter: events,
-      });
-    } catch (error) {
-      console.log(error);
-    }
+    await runSync({
+      calendar: google,
+      taskList: todoist,
+      eventEmitter: events,
+    });
   },
 });
 

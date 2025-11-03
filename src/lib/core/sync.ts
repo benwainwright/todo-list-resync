@@ -17,45 +17,53 @@ export const runSync = async ({
   eventEmitter,
 }: SyncConfig) => {
   eventEmitter.emit("SyncStarted");
-  const eventsPromise = calendar.getEvents();
-  const tasksPromise = taskList.getTasks();
+  try {
+    const eventsPromise = calendar.getEvents();
+    const tasksPromise = taskList.getTasks();
 
-  const tasks = await tasksPromise;
-  const tasksToMove = findInitialTasksToMove(tasks);
-  eventEmitter.emit("IdentifiedInitialTasksToMove", tasksToMove);
+    const tasks = await tasksPromise;
+    const tasksToMove = findInitialTasksToMove(tasks);
+    eventEmitter.emit("IdentifiedInitialTasksToMove", tasksToMove);
 
-  const tasksToUpdate: Task[] = [];
+    const tasksToUpdate: Task[] = [];
 
-  const events = await eventsPromise;
-  for (let dayOffset = 0; tasksToMove.length > 0; dayOffset++) {
-    eventEmitter.emit("StartingDay", { offset: dayOffset });
+    const events = await eventsPromise;
+    for (let dayOffset = 0; tasksToMove.length > 0; dayOffset++) {
+      eventEmitter.emit("StartingDay", { offset: dayOffset });
 
-    const dayEvents = getEventsOnNowPlusIndex(events, dayOffset);
-    const dayTasks = getTasksOnNowPlusIndex(tasks, dayOffset);
+      const dayEvents = getEventsOnNowPlusIndex(events, dayOffset);
+      const dayTasks = getTasksOnNowPlusIndex(tasks, dayOffset);
 
-    const moveEvents = generateMoveEventsForGivenDay(
-      dayEvents,
-      dayTasks,
-      tasksToMove,
-      dayOffset,
-      eventEmitter,
+      const moveEvents = generateMoveEventsForGivenDay(
+        dayEvents,
+        dayTasks,
+        tasksToMove,
+        dayOffset,
+        eventEmitter,
+      );
+
+      switch (moveEvents.status) {
+        case "GreaterThanMaxTasks":
+          tasksToMove.push(...moveEvents.toMove);
+          break;
+
+        case "LessThanMaxTasks":
+          tasksToUpdate.push(...moveEvents.newTasks);
+      }
+    }
+
+    eventEmitter.emit("FinishedCalculation", { tasksToUpdate });
+
+    await Promise.all(
+      tasksToUpdate.map(async (task) => await taskList.updateTask(task)),
     );
 
-    switch (moveEvents.status) {
-      case "GreaterThanMaxTasks":
-        tasksToMove.push(...moveEvents.toMove);
-        break;
-
-      case "LessThanMaxTasks":
-        tasksToUpdate.push(...moveEvents.newTasks);
+    eventEmitter.emit("SyncFinished");
+  } catch (error) {
+    if (error instanceof Error) {
+      eventEmitter.emit("SyncError", error);
+    } else {
+      throw error;
     }
   }
-
-  eventEmitter.emit("FinishedCalculation", { tasksToUpdate });
-
-  await Promise.all(
-    tasksToUpdate.map(async (task) => await taskList.updateTask(task)),
-  );
-
-  eventEmitter.emit("SyncFinished");
 };
