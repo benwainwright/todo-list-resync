@@ -28,13 +28,10 @@ export class EventBus implements EventEmitter {
     name: TEventName,
     callback: (data: globalThis.Events[TEventName]) => void,
   ) {
-    this.emitter.on(
-      EVENT_BUS_KEY,
-      (data: { key: TEventName; data: globalThis.Events[TEventName] }) => {
-        if (data.key === name) {
-          callback(data.data);
-        }
-      },
-    );
+    this.emitter.on(EVENT_BUS_KEY, (data: EventEmission<TEventName>) => {
+      if (data.name === name) {
+        callback(data.data);
+      }
+    });
   }
 }
