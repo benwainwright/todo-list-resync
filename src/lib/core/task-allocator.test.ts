@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { DateTime, Interval } from "luxon";
 
-import { IntervalAllocator } from "./interval-allocator.ts";
+import { TaskAllocator } from "./task-allocator.ts";
 import { DEFAULT_TASK_MINUTES } from "@constants";
 import type { EventEmitter, Task } from "@types";
 
@@ -39,7 +39,7 @@ describe("IntervalAllocator", () => {
 
   const createAllocator = () => {
     const { emitter, emitted } = createMockEmitter();
-    const allocator = new IntervalAllocator([gap], emitter);
+    const allocator = new TaskAllocator([gap], emitter);
     return { allocator, emitted };
   };
 
@@ -116,7 +116,7 @@ describe("IntervalAllocator", () => {
     const base = DateTime.fromISO("2024-01-01T13:00:00.000Z");
     const gap = Interval.fromDateTimes(base, base.plus({ minutes: 30 }));
     const { emitter, emitted } = createMockEmitter();
-    const allocator = new IntervalAllocator([gap], emitter);
+    const allocator = new TaskAllocator([gap], emitter);
 
     const task: Task = {
       id: "task-2",

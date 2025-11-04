@@ -3,7 +3,7 @@ import { Interval } from "luxon";
 import { intervalFromTask } from "./interval-from-task.ts";
 import { DEFAULT_TASK_MINUTES } from "@constants";
 
-export class IntervalAllocator {
+export class TaskAllocator {
   private _cachedGaps: Interval[] | null = null;
 
   public constructor(
