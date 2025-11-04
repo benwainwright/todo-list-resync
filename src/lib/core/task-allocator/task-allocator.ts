@@ -1,6 +1,6 @@
 import type { EventEmitter, Task } from "@types";
 import { Interval } from "luxon";
-import { intervalFromTask } from "./interval-from-task.ts";
+import { intervalFromTask } from "../interval-from-task.ts";
 import { DEFAULT_TASK_MINUTES } from "@constants";
 
 export class TaskAllocator {

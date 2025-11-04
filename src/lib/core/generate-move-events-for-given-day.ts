@@ -2,7 +2,7 @@ import type { Event, EventEmitter, Task } from "@types";
 import { MAX_TASKS_PER_DAY } from "@constants";
 
 import { calculateGapsInWorkingDay } from "./calculate-gaps-in-working-day.ts";
-import { TaskAllocator } from "./task-allocator.ts";
+import { TaskAllocator } from "./task-allocator/index.ts";
 
 interface MaxTasksOutcome {
   status: "MaxTasks";
@@ -44,6 +44,7 @@ export const generateMoveEventsForGivenDay = (
 
   const gaps = calculateGapsInWorkingDay(eventsOnDay, dayTasks, dayOffset);
   eventEmitter.emit("CalculatingWorkingDayGaps", gaps);
+
   const allocator = new TaskAllocator(gaps, eventEmitter);
 
   const remainingCapacity = Math.max(0, MAX_TASKS_PER_DAY - dayTasks.length);
