@@ -26,12 +26,14 @@ test("merges overlapping occupied intervals from events and tasks", () => {
       start: { date: base.plus({ minutes: 30 }).toJSDate() },
       duration: { amount: 60, unit: "minute" },
       title: "Task overlapping first event",
+      labels: ["string"],
       description: "",
     },
     {
       id: "task-2",
       start: { date: base.plus({ hours: 3, minutes: 45 }).toJSDate() },
       duration: { amount: 30, unit: "minute" },
+      labels: ["string"],
       title: "Task overlapping second event",
       description: "",
     },
@@ -103,6 +105,7 @@ test("ignores events and tasks without a valid interval", () => {
       id: "valid-task",
       start: { date: base.plus({ hours: 2 }).toJSDate() },
       duration: { amount: 1, unit: "day" },
+      labels: ["string"],
       title: "Valid task",
       description: "",
     },
@@ -111,12 +114,14 @@ test("ignores events and tasks without a valid interval", () => {
       duration: { amount: 30, unit: "minute" },
       title: "No start",
       description: "",
+      labels: ["string"],
     },
     {
       id: "missing-duration",
       start: { date: base.plus({ hours: 4 }).toJSDate() },
       title: "No duration",
       description: "",
+      labels: ["string"],
     },
   ];
 

@@ -46,6 +46,7 @@ describe("IntervalAllocator", () => {
   const createTask = (): Task => ({
     id: "task-1",
     title: "Task without scheduling info",
+    labels: [],
     description: "",
   });
 
@@ -170,6 +171,7 @@ describe("IntervalAllocator", () => {
       id: "task-2",
       title: "Too long for the gap",
       description: "",
+      labels: ["label"],
     };
 
     const success = allocator.tryAllocate(task);

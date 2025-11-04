@@ -4,6 +4,7 @@ export interface Task {
     date: Date;
     timezone?: string;
   };
+  labels: string[];
   duration?: {
     amount: number;
     unit: "minute" | "day";

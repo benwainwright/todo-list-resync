@@ -53,6 +53,7 @@ export class TodoistClient implements TasksApi {
       id: task.id,
       description: task.description,
       title: task.content,
+      labels: task.labels,
       start: {
         date: new Date(task.due?.date ?? ""),
         timezone: task.due?.timezone === null ? undefined : task.due?.timezone,

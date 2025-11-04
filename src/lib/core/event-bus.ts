@@ -19,7 +19,7 @@ export class EventBus implements EventEmitter {
     this.emitter.on(EVENT_BUS_KEY, callback);
   }
 
-  public async on<TEventName extends keyof globalThis.Events>(
+  public on<TEventName extends keyof globalThis.Events>(
     name: TEventName,
     callback: (data: globalThis.Events[TEventName]) => void,
   ) {

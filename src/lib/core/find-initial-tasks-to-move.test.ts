@@ -10,6 +10,7 @@ const makeTask = (
   partial: Partial<Task> & Pick<Task, "id" | "title" | "description">,
 ): Task => ({
   duration: undefined,
+  labels: ["string"],
   start: partial.start,
   id: partial.id,
   title: partial.title,
