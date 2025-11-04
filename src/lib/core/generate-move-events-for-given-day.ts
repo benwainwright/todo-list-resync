@@ -51,7 +51,7 @@ export const generateMoveEventsForGivenDay = (
   for (
     let taskToAllocate = 0;
     taskToAllocate < tasksToMove.length &&
-    allocator.allocatedIntervals.length < remainingCapacity;
+    allocator.allocatedTasks.length < remainingCapacity;
 
   ) {
     const theTask = tasksToMove[taskToAllocate];
@@ -68,17 +68,13 @@ export const generateMoveEventsForGivenDay = (
     tasksToMove.splice(taskToAllocate, 1);
   }
 
-  const newTasks = allocator.allocatedIntervals.map(
-    (interval) => interval.task,
-  );
-
   eventEmitter.emit("NewTasksAllocated", {
     offset: dayOffset,
-    updateTasks: newTasks,
+    updateTasks: allocator.allocatedTasks,
   });
 
   return {
     status: "LessThanMaxTasks",
-    newTasks,
+    newTasks: allocator.allocatedTasks,
   };
 };

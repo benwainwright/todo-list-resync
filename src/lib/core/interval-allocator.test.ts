@@ -57,84 +57,35 @@ describe("IntervalAllocator", () => {
     const success = allocator.tryAllocate(task);
 
     expect(success).toBe(true);
-    expect(allocator.allocatedIntervals).toHaveLength(1);
+    expect(allocator.allocatedTasks).toHaveLength(1);
 
-    const allocated = allocator.allocatedIntervals[0];
+    const allocated = allocator.allocatedTasks[0];
     if (!allocated) {
-      throw new Error("Expected an allocated interval to exist");
+      throw new Error("Expected an allocated task to exist");
     }
-    if (!allocated.task.start) {
+    if (!allocated.start) {
       throw new Error("Expected allocated task to have start defined");
     }
-    const allocatedStartIso = DateTime.fromJSDate(
-      allocated.task.start.date,
-    ).toISO();
+    const allocatedStartIso = DateTime.fromJSDate(allocated.start.date).toISO();
+
     const baseIso = base.toISO();
+
     expect(allocatedStartIso).not.toBeNull();
     expect(baseIso).not.toBeNull();
     expect(allocatedStartIso).toBe(baseIso);
-    expect(allocated.task.duration).toEqual({
+    expect(allocated.duration).toEqual({
       unit: "minute",
       amount: DEFAULT_TASK_MINUTES,
     });
-    const newStartIso = allocated.newInterval.start?.toISO() ?? null;
-    const newEndIso = allocated.newInterval.end?.toISO() ?? null;
-    const expectedStartIso = base.toISO();
-    const expectedEndIso = base.plus({ minutes: DEFAULT_TASK_MINUTES }).toISO();
-    if (
-      newStartIso === null ||
-      newEndIso === null ||
-      expectedStartIso === null ||
-      expectedEndIso === null
-    ) {
-      throw new Error("Expected ISO strings for new interval bounds");
-    }
-    expect(newStartIso).toBe(expectedStartIso);
-    expect(newEndIso).toBe(expectedEndIso);
-  });
-
-  test("recalculates gaps after a successful allocation", () => {
-    const { allocator } = createAllocator();
-    const task = createTask();
-
-    const initialGaps = allocator.gaps;
-    expect(initialGaps).toHaveLength(1);
-
-    const success = allocator.tryAllocate(task);
-    expect(success).toBe(true);
-
-    const updatedGaps = allocator.gaps;
-    expect(updatedGaps).toHaveLength(1);
-    const [firstGap] = updatedGaps;
-    if (!firstGap) {
-      throw new Error("Expected at least one updated gap");
-    }
-    const expectedGapStartIso = base
-      .plus({ minutes: DEFAULT_TASK_MINUTES })
-      .toISO();
-    const gapStartIso = firstGap.start?.toISO() ?? null;
-    const gapEndIso = firstGap.end?.toISO() ?? null;
-    const expectedGapEndIso = gap.end?.toISO() ?? null;
-    if (
-      gapStartIso === null ||
-      gapEndIso === null ||
-      expectedGapStartIso === null ||
-      expectedGapEndIso === null
-    ) {
-      throw new Error("Expected ISO strings for updated gap bounds");
-    }
-    expect(gapStartIso).toBe(expectedGapStartIso);
-    expect(gapEndIso).toBe(expectedGapEndIso);
   });
 
   test("emits detailed events for a successful allocation", () => {
     const { allocator, emitted } = createAllocator();
     const task = createTask();
-    const initialGaps = allocator.gaps;
 
     const success = allocator.tryAllocate(task);
     expect(success).toBe(true);
-    const allocated = allocator.allocatedIntervals[0];
+    const allocated = allocator.allocatedTasks[0];
     if (!allocated) {
       throw new Error("Expected an allocated interval after success");
     }
@@ -149,7 +100,7 @@ describe("IntervalAllocator", () => {
     if (!tryAllocationEvent) {
       throw new Error("Expected TryAllocation event to be emitted");
     }
-    expect(tryAllocationEvent.data).toEqual({ task, gaps: initialGaps });
+    expect(tryAllocationEvent.data).toEqual({ task, gaps: [gap] });
 
     const allocationSucceedEvent = emitted[2];
     if (!allocationSucceedEvent) {
@@ -157,7 +108,7 @@ describe("IntervalAllocator", () => {
     }
     expect(allocationSucceedEvent.data).toEqual({
       old: task,
-      new: allocated.task,
+      new: allocated,
     });
   });
 
@@ -177,7 +128,7 @@ describe("IntervalAllocator", () => {
     const success = allocator.tryAllocate(task);
 
     expect(success).toBe(false);
-    expect(allocator.allocatedIntervals).toHaveLength(0);
+    expect(allocator.allocatedTasks).toHaveLength(0);
     expect(emitted.map((event) => event.name)).toEqual([
       "TryAllocation",
       "TryGap",

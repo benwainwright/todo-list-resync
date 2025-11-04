@@ -11,17 +11,16 @@ export class IntervalAllocator {
     private events: EventEmitter,
   ) {}
 
-  public readonly allocatedIntervals: { task: Task; newInterval: Interval }[] =
-    [];
+  public readonly allocatedTasks: Task[] = [];
 
-  public get gaps(): Interval[] {
+  private get gaps(): Interval[] {
     if (!this._cachedGaps) {
       this._cachedGaps = this._gaps.flatMap((gap) =>
         Interval.xor([
           gap,
-          ...this.allocatedIntervals.map(
-            (allocatedInterval) => allocatedInterval.newInterval,
-          ),
+          ...this.allocatedTasks
+            .map((task) => intervalFromTask(task))
+            .flatMap((interval) => (interval ? [interval] : [])),
         ]),
       );
     }
@@ -57,10 +56,7 @@ export class IntervalAllocator {
       const candidateInterval = intervalFromTask(newTask);
 
       if (candidateInterval && gap.engulfs(candidateInterval)) {
-        this.allocatedIntervals.push({
-          task: newTask,
-          newInterval: candidateInterval,
-        });
+        this.allocatedTasks.push(newTask);
         this.invalidateGapsCache();
         this.events.emit("AllocationSucceed", { old: task, new: newTask });
         return true;
