@@ -1,15 +1,20 @@
-import type { EventEmitter, Task } from "@types";
+import type { EventEmitter, Rule, Task } from "@types";
 import { Interval } from "luxon";
 import { intervalFromTask } from "../interval-from-task.ts";
 import { DEFAULT_TASK_MINUTES } from "@constants";
 
 export class TaskAllocator {
   private _cachedGaps: Interval[] | null = null;
+  private _rules: Rule[];
 
   public constructor(
     private _gaps: Interval[],
     private events: EventEmitter,
-  ) {}
+    private existingTasks: Task[],
+    rules?: Rule[],
+  ) {
+    this._rules = rules ?? [];
+  }
 
   public readonly allocatedTasks: Task[] = [];
 
@@ -34,6 +39,21 @@ export class TaskAllocator {
 
   public tryAllocate(task: Task) {
     const gaps = this.gaps;
+
+    const dayTasks = [...this.existingTasks, ...this.allocatedTasks];
+
+    const rulesFailed = this._rules.filter(
+      (item) => !item.validateAllocation(dayTasks, task),
+    );
+
+    if (rulesFailed.length > 0) {
+      this.events.emit("RulesFailed", {
+        rules: rulesFailed,
+        tasks: dayTasks,
+        task,
+      });
+      return false;
+    }
 
     this.events.emit("TryAllocation", { task, gaps });
 

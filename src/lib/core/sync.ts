@@ -1,4 +1,4 @@
-import type { CalendarApi, TasksApi, Task, EventEmitter } from "@types";
+import type { CalendarApi, TasksApi, Task, EventEmitter, Rule } from "@types";
 
 import { findInitialTasksToMove } from "./find-initial-tasks-to-move.ts";
 import { getEventsOnNowPlusIndex } from "./get-events-on-now-plus-index.ts";
@@ -8,12 +8,14 @@ import { getTasksOnNowPlusIndex } from "./get-tasks-on-now-plus-index.ts";
 interface SyncConfig {
   calendar: CalendarApi;
   taskList: TasksApi;
+  rules?: Rule[];
   eventEmitter: EventEmitter;
 }
 
 export const runSync = async ({
   calendar,
   taskList,
+  rules,
   eventEmitter,
 }: SyncConfig) => {
   eventEmitter.emit("SyncStarted");
@@ -38,6 +40,7 @@ export const runSync = async ({
         dayEvents,
         dayTasks,
         tasksToMove,
+        rules ?? [],
         dayOffset,
         eventEmitter,
       );

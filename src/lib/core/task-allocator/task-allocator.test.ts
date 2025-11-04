@@ -1,13 +1,24 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, mock, test } from "bun:test";
 import { DateTime, Interval } from "luxon";
 
 import { TaskAllocator } from "./task-allocator.ts";
 import { DEFAULT_TASK_MINUTES } from "@constants";
-import type { EventEmitter, Task } from "@types";
+import type { EventEmitter, Rule, Task } from "@types";
 
 type EmittedEvent<TName extends keyof Events = keyof Events> = {
   name: TName;
   data: Events[TName] | undefined;
+};
+
+const createMockRule = (doesValidate: boolean): Rule => {
+  const mockValidate = mock();
+
+  mockValidate.mockReturnValue(doesValidate);
+
+  return {
+    collectInvalid: mock(),
+    validateAllocation: mockValidate,
+  };
 };
 
 const createMockEmitter = () => {
@@ -37,22 +48,22 @@ describe("IntervalAllocator", () => {
   const base = DateTime.fromISO("2024-01-01T09:00:00.000Z");
   const gap = Interval.fromDateTimes(base, base.plus({ hours: 2 }));
 
-  const createAllocator = () => {
+  const createAllocator = (initialTasks: Task[], rules?: Rule[]) => {
     const { emitter, emitted } = createMockEmitter();
-    const allocator = new TaskAllocator([gap], emitter);
+    const allocator = new TaskAllocator([gap], emitter, initialTasks, rules);
     return { allocator, emitted };
   };
 
-  const createTask = (): Task => ({
-    id: "task-1",
+  const createTask = (id: string): Task => ({
+    id,
     title: "Task without scheduling info",
     labels: [],
     description: "",
   });
 
   test("returns true and records allocation when a gap can fit", () => {
-    const { allocator } = createAllocator();
-    const task = createTask();
+    const { allocator } = createAllocator([createTask("task-1")]);
+    const task = createTask("task-2");
 
     const success = allocator.tryAllocate(task);
 
@@ -80,8 +91,9 @@ describe("IntervalAllocator", () => {
   });
 
   test("emits detailed events for a successful allocation", () => {
-    const { allocator, emitted } = createAllocator();
-    const task = createTask();
+    const { allocator, emitted } = createAllocator([createTask("task-1")]);
+
+    const task = createTask("task-2");
 
     const success = allocator.tryAllocate(task);
     expect(success).toBe(true);
@@ -112,11 +124,42 @@ describe("IntervalAllocator", () => {
     });
   });
 
+  test("fails to allocate if a rule fails", () => {
+    const { allocator } = createAllocator(
+      [createTask("task-1")],
+      [createMockRule(true), createMockRule(false), createMockRule(true)],
+    );
+
+    const task = createTask("task-2");
+
+    const success = allocator.tryAllocate(task);
+    expect(success).toBe(false);
+    expect(allocator.allocatedTasks).toHaveLength(0);
+  });
+
+  test("allocates if all rules are successfull", () => {
+    const { allocator } = createAllocator(
+      [createTask("task-1")],
+      [createMockRule(true), createMockRule(true), createMockRule(true)],
+    );
+
+    const task = createTask("task-2");
+
+    const success = allocator.tryAllocate(task);
+    expect(success).toBe(true);
+    expect(allocator.allocatedTasks).toHaveLength(1);
+  });
+
   test("emits AllocationFailed when no gap can fit the task", () => {
     const base = DateTime.fromISO("2024-01-01T13:00:00.000Z");
     const gap = Interval.fromDateTimes(base, base.plus({ minutes: 30 }));
     const { emitter, emitted } = createMockEmitter();
-    const allocator = new TaskAllocator([gap], emitter);
+    const allocator = new TaskAllocator(
+      [gap],
+      emitter,
+      [createTask("task-1")],
+      [],
+    );
 
     const task: Task = {
       id: "task-2",

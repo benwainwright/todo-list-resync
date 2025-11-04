@@ -13,6 +13,7 @@
     "@types/bun": "latest",
     "@types/luxon": "3.7.1",
     "@typescript/native-preview": "^7.0.0-dev.20251103.1",
+    "bun-mock-extended": "^3.0.5",
     "eslint": "9.39.0",
     "husky": "9.1.7",
     "lint-staged": "16.2.6",

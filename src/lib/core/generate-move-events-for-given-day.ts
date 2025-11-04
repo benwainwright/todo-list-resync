@@ -1,8 +1,8 @@
-import type { Event, EventEmitter, Task } from "@types";
-import { MAX_TASKS_PER_DAY } from "@constants";
+import type { Event, EventEmitter, Rule, Task } from "@types";
 
 import { calculateGapsInWorkingDay } from "./calculate-gaps-in-working-day.ts";
 import { TaskAllocator } from "./task-allocator/index.ts";
+import { moveTasksToDay } from "./move-tasks-to-day.ts";
 
 interface MaxTasksOutcome {
   status: "MaxTasks";
@@ -26,53 +26,19 @@ type DayOutcome =
 export const generateMoveEventsForGivenDay = (
   eventsOnDay: Event[],
   dayTasks: Task[],
-  tasksToMove: Task[],
+  remainingTasks: Task[],
+  rules: Rule[],
   dayOffset: number,
   eventEmitter: EventEmitter,
 ): DayOutcome => {
   eventEmitter.emit("BeginGeneratingDayMoveEvents", { offset: dayOffset });
-  if (dayTasks.length === MAX_TASKS_PER_DAY) {
-    eventEmitter.emit("DayTasksIsAtMax", { offset: dayOffset });
-    return { status: "MaxTasks" };
-  }
-
-  if (dayTasks.length > MAX_TASKS_PER_DAY) {
-    const [, , ...rest] = dayTasks;
-    eventEmitter.emit("TooManyTasksInDay", { offset: dayOffset, toMove: rest });
-    return { status: "GreaterThanMaxTasks", toMove: rest };
-  }
 
   const gaps = calculateGapsInWorkingDay(eventsOnDay, dayTasks, dayOffset);
   eventEmitter.emit("CalculatingWorkingDayGaps", gaps);
 
-  const allocator = new TaskAllocator(gaps, eventEmitter);
+  const allocator = new TaskAllocator(gaps, eventEmitter, dayTasks, rules);
 
-  const remainingCapacity = Math.max(0, MAX_TASKS_PER_DAY - dayTasks.length);
-
-  for (
-    let taskToAllocate = 0;
-    taskToAllocate < tasksToMove.length &&
-    allocator.allocatedTasks.length < remainingCapacity;
-
-  ) {
-    const theTask = tasksToMove[taskToAllocate];
-
-    if (!theTask) {
-      taskToAllocate++;
-      continue;
-    }
-
-    if (!allocator.tryAllocate(theTask)) {
-      break;
-    }
-
-    tasksToMove.splice(taskToAllocate, 1);
-  }
-
-  eventEmitter.emit("NewTasksAllocated", {
-    offset: dayOffset,
-    updateTasks: allocator.allocatedTasks,
-  });
+  moveTasksToDay(allocator, remainingTasks);
 
   return {
     status: "LessThanMaxTasks",
