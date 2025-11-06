@@ -3,7 +3,29 @@ import { Interval } from "luxon";
 import { intervalFromTask } from "../interval-from-task.ts";
 import { DEFAULT_TASK_MINUTES } from "@constants";
 
-export class TaskAllocator {
+type EventEmitter = Partial<{
+  [K in keyof Events as Uncapitalize<K>]: Events[K] extends never
+    ? () => unknown
+    : (args: Events[K]) => unknown;
+}>;
+
+const eventEmit = <TClass extends EventEmitter>(
+  target: TClass,
+  propertyKey: keyof Events,
+  descriptor: PropertyDescriptor,
+) => {
+  const prop = target[propertyKey];
+  if (typeof prop === "function") {
+    const func: typeof prop = (...args: unknown[]): unknown => {
+      const foo = args[0];
+      if (typeof target[propertyKey] === "function") {
+        return target[propertyKey]?.(foo);
+      }
+    };
+  }
+};
+
+export class TaskAllocator implements EventEmitter {
   private _cachedGaps: Interval[] | null = null;
   private _rules: Rule[];
 
@@ -37,6 +59,7 @@ export class TaskAllocator {
     this._cachedGaps = null;
   }
 
+  @eventEmit
   public tryAllocate(task: Task) {
     const gaps = this.gaps;
 

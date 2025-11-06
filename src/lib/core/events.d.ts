@@ -6,6 +6,7 @@ declare global {
     SyncFinished: undefined;
     SyncStarted: undefined;
     SyncError: Error;
+    TryAllocate: Task;
     IdentifiedInitialTasksToMove: Task[];
     StartingDay: { offset: number };
     BeginGeneratingDayMoveEvents: { offset: number };
